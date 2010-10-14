@@ -1,7 +1,4 @@
-# compatibility with legacy rpm
-%{!?_lib:%define _lib	lib}
-
-%define	__soversion	5.0
+%define	__soversion	5.1
 %define	_libdb_a	libdb-%{__soversion}.a
 %define	_libcxx_a	libdb_cxx-%{__soversion}.a
 
@@ -46,14 +43,14 @@
 %{?_without_asmmutex: %global build_asmmutex 0}
 
 Summary:	The Berkeley DB database library for C
-Name:		db50
-Version:	5.0.21
+Name:		db51
+Version:	5.1.19
 Release:	%mkrel 1
 Source0:	http://download.oracle.com/berkeley-db/db-%{version}.tar.gz
 # statically link db1 library
-Patch0:		db-5.0.21-db185.patch
+Patch0:		db-5.1.19-db185.patch
 Patch1:		db-4.7.25-fix-format-errors.patch
-Patch2:		db-5.0.21-tcl-link.patch
+Patch2:		db-5.1.19-tcl-link.patch
 # fedora patches
 Patch101:	db-4.7.25-jni-include-dir.patch
 URL:		http://www.oracle.com/technology/software/products/berkeley-db/
@@ -243,7 +240,7 @@ find . -type f -perm 0444 -exec chmod 644 {} \;
 
 %{__rm} -r docs/java
 %patch0 -p1 -b .db185~
-%patch1 -p1 -b .format~
+#%%patch1 -p1 -b .format~
 %patch2 -p1 -b .tcl~
 
 # fedora patches
@@ -593,6 +590,3 @@ rm -rf %{buildroot}
 %{_libdir}/libdb_nss-%{__soversion}.la
 %{_libdir}/libdb_nss-%{__soversion}.so
 %endif
-
-
-
