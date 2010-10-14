@@ -14,33 +14,21 @@
 %define libdbnss	%{libname_orig}nss%{__soversion}
 %define libdbnssdev	%{libdbnss}-devel
 
-# Define Mandriva Linux version we are building for
-%{?!mdkversion:%define mdkversion	%(perl -pe '/(\\d+)\\.(\\d)\\.?(\\d)?/; $_="$1$2".($3||0)' /etc/mandriva-release)}
-
-%ifnarch %mips %arm
+%ifnarch %[mips} %{arm}
 %bcond_without java
 %define gcj_support 1
 %endif
 
+%bcond_without tcl
+%bcond_without db1
 # Define to build a stripped down version to use for nss libraries
-%define build_nss	1
-
-# Allow --with[out] nss rpm command line build
-%{?_with_nss: %{expand: %%define build_nss 1}}
-%{?_without_nss: %{expand: %%define build_nss 0}}
+%bcond_without nss
 
 # Define to rename utilities and allow parallel installation
-%define build_parallel	0
-
-# Allow --with[out] parallel rpm command line build
-%{?_with_parallel: %{expand: %%define build_parallel 1}}
-%{?_without_parallel: %{expand: %%define build_parallel 0}}
+%bcond_with parallel
 
 # mutexes defaults to POSIX/pthreads/library
-%define build_asmmutex 0
-
-%{?_with_asmmutex: %global build_asmmutex 1}
-%{?_without_asmmutex: %global build_asmmutex 0}
+%bcond_with asmmutex
 
 Summary:	The Berkeley DB database library for C
 Name:		db51
@@ -49,22 +37,27 @@ Release:	%mkrel 1
 Source0:	http://download.oracle.com/berkeley-db/db-%{version}.tar.gz
 # statically link db1 library
 Patch0:		db-5.1.19-db185.patch
-Patch1:		db-4.7.25-fix-format-errors.patch
 Patch2:		db-5.1.19-tcl-link.patch
 # fedora patches
 Patch101:	db-4.7.25-jni-include-dir.patch
 URL:		http://www.oracle.com/technology/software/products/berkeley-db/
 License:	BSD
 Group:		System/Libraries
-BuildRequires:	%{!?_without_tcl:tcl-devel} %{!?_without_db1:db1-devel} ed libtool
-%if %with java
+%if %{with tcl}
+BuildRequires:	tcl-devel
+%endif
+%if %{with db1}
+BuildRequires:	db1-devel
+%endif
+BuildRequires:	ed libtool
+%if %{with java}
 BuildRequires:	java-rpmbuild
 BuildRequires:	sharutils
 %if %{gcj_support}
 BuildRequires:	java-gcj-compat-devel
 %endif
 %endif
-BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-buildroot
+BuildRoot:	%{_tmppath}/%{name}-%{EVRD}-buildroot
 
 %description
 The Berkeley Database (Berkeley DB) is a programmatic toolkit that provides
@@ -95,7 +88,7 @@ should be installed on all systems.
 This package contains the files needed to build C++ programs which use
 Berkeley DB.
 
-%if %with java
+%if %{with java}
 %package -n	%{libdbjava}
 Summary:	The Berkeley DB database library for C++
 Group:		System/Libraries
@@ -117,7 +110,7 @@ Group:		Development/Java
 Javadoc for %{name}.
 %endif
 
-%if %{!?_without_tcl:1}%{?_without_tcl:0}
+%if %{with tcl}
 %package -n	%{libdbtcl}
 Summary:	The Berkeley DB database library for TCL
 Group:		System/Libraries
@@ -135,12 +128,13 @@ building tcl programs which use Berkeley DB.
 %package	utils
 Summary:	Command line tools for managing Berkeley DB databases
 Group:		Databases
-%if !%{build_parallel}
-Conflicts:	db3-utils
-Conflicts:	db46-utils
-Conflicts:	db47-utils
+%if !%{with parallel}
+Conflicts:	db4-utils
+Conflicts:	db5-utils < %{__soversion}
+Conflicts:	db-utils < %{__soversion}
 %endif
-Provides:	db5-utils = %{version}-%{release}
+Provides:	db5-utils = %{EVRD}
+Provides:	db-utils = %{EVRD}
 
 %description utils
 The Berkeley Database (Berkeley DB) is a programmatic toolkit that provides
@@ -154,16 +148,16 @@ This package contains command line tools for managing Berkeley DB databases.
 %package -n	%{libnamedev}
 Summary:	Development libraries/header files for the Berkeley DB library
 Group:		Development/Databases
-Requires:	%{libname} = %{version}-%{release}
-%if %{!?_without_tcl:1}%{?_without_tcl:0}
-Requires:	%{libdbtcl} = %{version}-%{release}
+Requires:	%{libname} = %{EVRD}
+%if %{with tcl}
+Requires:	%{libdbtcl} = %{EVRD}
 %endif
-Requires:	%{libdbcxx} = %{version}-%{release}
-Provides:	db%{__soversion}-devel = %{version}-%{release}
-Provides:	libdb%{__soversion}-devel = %{version}-%{release}
+Requires:	%{libdbcxx} = %{EVRD}
+Provides:	db%{__soversion}-devel = %{EVRD}
+Provides:	libdb%{__soversion}-devel = %{EVRD}
 Conflicts:	db-devel < %{__soversion}
-Provides:	db-devel = %{version}-%{release}
-Provides:	db5-devel = %{version}-%{release}
+Provides:	db-devel = %{EVRD}
+Provides:	db5-devel = %{EVRD}
 
 %description -n	%{libnamedev}
 The Berkeley Database (Berkeley DB) is a programmatic toolkit that provides
@@ -178,12 +172,12 @@ building programs which use Berkeley DB.
 %package -n	%{libnamestatic}
 Summary:	Development static libraries files for the Berkeley DB library
 Group:		Development/Databases
-Requires:	db%{__soversion}-devel = %{version}-%{release}
-Provides:	db%{__soversion}-static-devel = %{version}-%{release}
-Provides:	libdb%{__soversion}-static-devel = %{version}-%{release}
+Requires:	db%{__soversion}-devel = %{EVRD}
+Provides:	db%{__soversion}-static-devel = %{EVRD}
+Provides:	libdb%{__soversion}-static-devel = %{EVRD}
 Conflicts:	db-static-devel < %{__soversion}
-Provides:	db-static-devel = %{version}-%{release}
-Provides:	db5-static-devel = %{version}-%{release}
+Provides:	db-static-devel = %{EVRD}
+Provides:	db5-static-devel = %{EVRD}
 
 %description -n	%{libnamestatic}
 The Berkeley Database (Berkeley DB) is a programmatic toolkit that provides
@@ -195,7 +189,7 @@ and database recovery. DB supports C, C++, Java and Perl APIs.
 This package contains the static libraries for building programs which
 use Berkeley DB.
 
-%if %{build_nss}
+%if %{with nss}
 %package -n	%{libdbnss}
 Summary:	The Berkeley DB database library for NSS modules
 Group:		System/Libraries
@@ -213,11 +207,11 @@ that use Berkeley DB.
 %package -n	%{libdbnssdev}
 Summary:	Development libraries/header files for building nss modules with Berkeley DB
 Group:		Development/Databases
-Requires:	%{libdbnss} = %{version}-%{release}
-Provides:	libdbnss-devel = %{version}-%{release}
-Provides:	%{_lib}dbnss-devel = %{version}-%{release}
-Provides:	db_nss-devel = %{version}-%{release}
-Provides:	libdb_nss-devel = %{version}-%{release}
+Requires:	%{libdbnss} = %{EVRD}
+Provides:	libdbnss-devel = %{EVRD}
+Provides:	%{_lib}dbnss-devel = %{EVRD}
+Provides:	db_nss-devel = %{EVRD}
+Provides:	libdb_nss-devel = %{EVRD}
 Conflicts:	db_nss-devel < %{__soversion}
 
 %description -n	%{libdbnssdev}
@@ -232,15 +226,13 @@ modules which use Berkeley DB.
 %endif
 
 %prep
-
 %setup -q -n db-%{version}
 
 # fix strange attribs
 find . -type f -perm 0444 -exec chmod 644 {} \;
 
-%{__rm} -r docs/java
+rm -r lang/sql/jdbc/doc
 %patch0 -p1 -b .db185~
-#%%patch1 -p1 -b .format~
 %patch2 -p1 -b .tcl~
 
 # fedora patches
@@ -258,24 +250,24 @@ find . -name tags | xargs rm -f
 fixup_href() {
     for doc in $@ ; do
 	chmod u+w ${doc}
-	sed -e 's,="../api_c/,="../../%{name}-devel-%{version}/api_c/,g' \
-	    -e 's,="api_c/,="../%{name}-devel-%{version}/api_c/,g' \
-	    -e 's,="../api_cxx/,="../../%{name}-devel-%{version}/api_cxx/,g' \
-	    -e 's,="api_cxx/,="../%{name}-devel-%{version}/api_cxx/,g' \
-	    -e 's,="../api_tcl/,="../../%{name}-devel-%{version}/api_tcl/,g' \
-	    -e 's,="api_tcl/,="../%{name}-devel-%{version}/api_tcl/,g' \
-	    -e 's,="../java/,="../../%{name}-devel-%{version}/java/,g' \
-	    -e 's,="java/,="../%{name}-devel-%{version}/java/,g' \
-	    -e 's,="../examples_c/,="../../%{name}-devel-%{version}/examples_c/,g' \
-	    -e 's,="examples_c/,="../%{name}-devel-%{version}/examples_c/,g' \
-	    -e 's,="../examples_cxx/,="../../%{name}-devel-%{version}/examples_cxx/,g' \
-	    -e 's,="examples_cxx/,="../%{name}-devel-%{version}/examples_cxx/,g' \
-	    -e 's,="../ref/,="../../%{name}-devel-%{version}/ref/,g' \
-	    -e 's,="ref/,="../%{name}-devel-%{version}/ref/,g' \
-	    -e 's,="../images/,="../../%{name}-devel-%{version}/images/,g' \
-	    -e 's,="images/,="../%{name}-devel-%{version}/images/,g' \
-	    -e 's,="../utility/,="../../%{name}-utils-%{version}/utility/,g' \
-	    -e 's,="utility/,="../%{name}-utils-%{version}/utility/,g' ${doc} > ${doc}.new
+	sed -e 's,="../api_c/,="../../%{name}-devel/api_c/,g' \
+	    -e 's,="api_c/,="../%{name}-devel/api_c/,g' \
+	    -e 's,="../api_cxx/,="../../%{name}-devel/api_cxx/,g' \
+	    -e 's,="api_cxx/,="../%{name}-devel/api_cxx/,g' \
+	    -e 's,="../api_tcl/,="../../%{name}-devel/api_tcl/,g' \
+	    -e 's,="api_tcl/,="../%{name}-devel/api_tcl/,g' \
+	    -e 's,="../java/,="../../%{name}-devel/java/,g' \
+	    -e 's,="java/,="../%{name}-devel/java/,g' \
+	    -e 's,="../examples_c/,="../../%{name}-devel/examples_c/,g' \
+	    -e 's,="examples_c/,="../%{name}-devel/examples_c/,g' \
+	    -e 's,="../examples_cxx/,="../../%{name}-devel/examples_cxx/,g' \
+	    -e 's,="examples_cxx/,="../%{name}-devel/examples_cxx/,g' \
+	    -e 's,="../ref/,="../../%{name}-devel/ref/,g' \
+	    -e 's,="ref/,="../%{name}-devel/ref/,g' \
+	    -e 's,="../images/,="../../%{name}-devel/images/,g' \
+	    -e 's,="images/,="../%{name}-devel/images/,g' \
+	    -e 's,="../utility/,="../../%{name}-utils/utility/,g' \
+	    -e 's,="utility/,="../%{name}-utils/utility/,g' ${doc} > ${doc}.new
 	touch -r ${doc} ${doc}.new
 	cat ${doc}.new > ${doc}
 	touch -r ${doc}.new ${doc}
@@ -298,7 +290,7 @@ CFLAGS="$CFLAGS -D_GNU_SOURCE -D_REENTRANT"
 %endif
 export CFLAGS
 
-%if %with java
+%if %{with java}
 export CLASSPATH=
 export JAVAC=%{javac}
 export JAR=%{jar}
@@ -310,17 +302,17 @@ JAVA_MAKE="JAR=%{jar} JAVAC=%{javac} JAVACFLAGS="-nowarn" JAVA=%{java}"
 pushd build_unix
 CONFIGURE_TOP="../dist" %configure2_5x \
 	--enable-shared --enable-static \
-%if %{?!_without_db1:1}%{?_without_db1:0}
+%if %{with db1}
 	--enable-compat185 --enable-dump185 \
 %endif
-%if %{?!_without_tcl:1}%{?_without_tcl:0}
+%if %{with tcl}
 	--enable-tcl --with-tcl=%{_libdir} --enable-test \
 %endif
 	--enable-cxx \
-%if %with java
+%if %{with java}
 	--enable-java \
 %endif
-%if %{build_asmmutex}
+%if %{with asmmutex}
 %ifarch %{ix86}
 	--disable-posixmutexes --with-mutex=x86/gcc-assembly
 %endif
@@ -336,13 +328,13 @@ CONFIGURE_TOP="../dist" %configure2_5x \
 %ifarch ppc
 	--disable-posixmutexes --with-mutex=PPC/gcc-assembly
 %endif
-%ifarch %{sunsparc}
+%ifarch %{sparc}
 	--disable-posixmutexes --with-mutex=Sparc/gcc-assembly
 %endif
-%ifarch %mips
+%ifarch %{mips}
 	--disable-posixmutexes --with-mutex=MIPS/gcc-assembly
 %endif
-%ifarch %arm
+%ifarch %{arm}
 	--disable-posixmutexes --with-mutex=ARM/gcc-assembly
 %endif
 %else
@@ -350,13 +342,13 @@ CONFIGURE_TOP="../dist" %configure2_5x \
 %endif
 
 %make $JAVA_MAKE
-%if %with java
-pushd ../java
-%{javadoc} -d ../docs/java `%{_bindir}/find . -name '*.java'`
+%if %{with java}
+pushd ../lang/java
+%{javadoc} -d ../sql/jdbc/doc `find . -name '*.java'`
 popd
 %endif
 popd
-%if %{build_nss}
+%if %{with nss}
 mkdir build_nss
 pushd build_nss
 CONFIGURE_TOP="../dist" %configure2_5x \
@@ -381,13 +373,13 @@ CONFIGURE_TOP="../dist" %configure2_5x \
 %ifarch ppc
 	--disable-posixmutexes --with-mutex=PPC/gcc-assembly
 %endif
-%ifarch %{sunsparc}
+%ifarch %{sparc}
 	--disable-posixmutexes --with-mutex=Sparc/gcc-assembly
 %endif
-%ifarch %mips
+%ifarch %{mips}
 	--disable-posixmutexes --with-mutex=MIPS/gcc-assembly
 %endif
-%ifarch %arm
+%ifarch %{arm}
 	--disable-posixmutexes --with-mutex=ARM/gcc-assembly
 %endif
 
@@ -402,7 +394,7 @@ make -C build_unix install_setup install_include install_lib install_utilities \
 	DESTDIR=%{buildroot} includedir=%{_includedir}/db4 \
 	emode=755
 
-%if %{build_nss}
+%if %{with nss}
 make -C build_nss install_include install_lib libdb_base=libdb_nss \
 	DESTDIR=%{buildroot} includedir=%{_includedir}/db_nss \
 	LIB_INSTALL_FILE_LIST=""
@@ -415,24 +407,25 @@ ln -s  /%{_lib}/libdb_nss-%{__soversion}.so %{buildroot}%{_libdir}
 ln -sf db4/db.h %{buildroot}%{_includedir}/db.h
 
 # XXX This is needed for parallel install with db4.2
-%if %{build_parallel}
+%if %{with parallel}
 for F in %{buildroot}%{_bindir}/*db_* ; do
    mv $F `echo $F | sed -e 's,db_,%{name}_,'`
 done
 %endif
 
 # Move db.jar file to the correct place, and version it
-%if %with java
+%if %{with java}
 mkdir -p %{buildroot}%{_jnidir}
 mv %{buildroot}%{_libdir}/db.jar %{buildroot}%{_jnidir}/db%{__soversion}-%{version}.jar
 (cd %{buildroot}%{_jnidir} && for jar in *-%{version}*; do %{__ln_s} ${jar} ${jar/-%{version}/}; done)
 
 %{__mkdir_p} %{buildroot}%{_javadocdir}/db%{__soversion}-%{version}
-%{__cp} -a docs/java/* %{buildroot}%{_javadocdir}/db%{__soversion}-%{version}
+%{__cp} -a lang/sql/jdbc/doc/* %{buildroot}%{_javadocdir}/db%{__soversion}-%{version}
 %{__ln_s} db%{__soversion}-%{version} %{buildroot}%{_javadocdir}/db%{__soversion}
 
 %if %{gcj_support}
-%{_bindir}/aot-compile-rpm
+rm -rf aot-compile-rpm
+aot-compile-rpm
 %endif
 %endif
 
@@ -443,52 +436,22 @@ ln -sf libdb_tcl-%{__soversion}.a %{buildroot}%{_libdir}/libdb_tcl.a
 ln -sf %{_libdb_a} %{buildroot}%{_libdir}/libdb-5.a
 ln -sf %{_libcxx_a} %{buildroot}%{_libdir}/libdb_cxx-5.a
 ln -sf libdb_tcl-%{__soversion}.a %{buildroot}%{_libdir}/libdb_tcl-5.a
-%if %with java
+%if %{with java}
 ln -sf libdb_java-%{__soversion}.a %{buildroot}%{_libdir}/libdb_java.a
 ln -sf libdb_java-%{__soversion}.a %{buildroot}%{_libdir}/libdb_java-5.a
 %endif
 
+rm -rf %{buildroot}%{_includedir}/db_nss/db_cxx.h
+
 %clean
 rm -rf %{buildroot}
 
-%if %mdkversion < 200900
-%post -n %{libname} -p /sbin/ldconfig
-%endif
-%if %mdkversion < 200900
-%postun -n %{libname} -p /sbin/ldconfig
-%endif
-
-%if %mdkversion < 200900
-%post -n %{libdbcxx} -p /sbin/ldconfig
-%endif
-%if %mdkversion < 200900
-%postun -n %{libdbcxx} -p /sbin/ldconfig
-%endif
-
-%if %with java
+%if %{with java}
 %post -n %{libdbjava}
 %{update_gcjdb}
 
 %postun -n %{libdbjava}
 %{clean_gcjdb}
-%endif
-
-%if %{?!_without_tcl:1}%{?_without_tcl:0} 
-%if %mdkversion < 200900
-%post -n %{libdbtcl} -p /sbin/ldconfig
-%endif
-%if %mdkversion < 200900
-%postun -n %{libdbtcl} -p /sbin/ldconfig
-%endif
-%endif
-
-%if %{build_nss}
-%if %mdkversion < 200900
-%post -n %{libdbnss} -p /sbin/ldconfig
-%endif
-%if %mdkversion < 200900
-%postun -n %{libdbnss} -p /sbin/ldconfig
-%endif
 %endif
 
 %files -n %{libname}
@@ -500,11 +463,11 @@ rm -rf %{buildroot}
 %defattr(755,root,root) 
 %{_libdir}/libdb_cxx-%{__soversion}.so
 
-%if %with java
+%if %{with java}
 %files -n %{libdbjava}
 %defattr(644,root,root,755)
-%doc docs/java
-%doc examples_java
+%doc lang/sql/jdbc/doc/*
+%doc examples/java/src
 %attr(755,root,root) %{_libdir}/libdb_java-%{__soversion}.so
 %attr(755,root,root) %{_libdir}/libdb_java-%{__soversion}_g.so
 %{_jnidir}/db%{__soversion}.jar
@@ -520,7 +483,7 @@ rm -rf %{buildroot}
 %doc %dir %{_javadocdir}/db%{__soversion}
 %endif
 
-%if %{?!_without_tcl:1}%{?_without_tcl:0} 
+%if %{with tcl}
 %files -n %{libdbtcl}
 %defattr(755,root,root)
 %{_libdir}/libdb_tcl-%{__soversion}.so
@@ -536,6 +499,7 @@ rm -rf %{buildroot}
 %{_bindir}/db*_load
 %{_bindir}/db*_printlog
 %{_bindir}/db*_recover
+%{_bindir}/db*_replicate
 #%%{_bindir}/db*_sql
 %{_bindir}/db*_stat
 %{_bindir}/db*_upgrade
@@ -546,7 +510,7 @@ rm -rf %{buildroot}
 %doc docs/api_reference
 %dir %{_includedir}/db4
 %{_includedir}/db4/db.h
-%if %{?!_without_db1:1}%{?_without_db1:0} 
+%if %{with db1}
 %{_includedir}/db4/db_185.h
 %endif
 %{_includedir}/db4/db_cxx.h
@@ -557,12 +521,12 @@ rm -rf %{buildroot}
 %{_libdir}/libdb_cxx.so
 %{_libdir}/libdb_cxx-5.so
 %{_libdir}/libdb_cxx-%{__soversion}.la
-%if %{?!_without_tcl:1}%{?_without_tcl:0} 
+%if %{with tcl}
 %{_libdir}/libdb_tcl.so
 %{_libdir}/libdb_tcl-5.so
 %{_libdir}/libdb_tcl-%{__soversion}.la
 %endif
-%if %with java
+%if %{with java}
 %{_libdir}/libdb_java.so
 %{_libdir}/libdb_java-5.so
 %{_libdir}/libdb_java-%{__soversion}.la
@@ -572,7 +536,7 @@ rm -rf %{buildroot}
 %defattr(644,root,root,755)
 %{_libdir}/*.a
 
-%if %{build_nss}
+%if %{with nss}
 %files -n %{libdbnss}
 %defattr(755,root,root) 
 /%{_lib}/libdb_nss-%{__soversion}.so
@@ -581,10 +545,9 @@ rm -rf %{buildroot}
 %defattr(644,root,root,755)
 %dir %{_includedir}/db_nss
 %{_includedir}/db_nss/db.h
-%if %{?!_without_db1:1}%{?_without_db1:0} 
+%if %{with db1}
 %{_includedir}/db_nss/db_185.h
 %endif
-%exclude %{_includedir}/db_nss/db_cxx.h
 %{_libdir}/libdb_nss.so
 %{_libdir}/libdb_nss-5.so
 %{_libdir}/libdb_nss-%{__soversion}.la
