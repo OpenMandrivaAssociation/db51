@@ -8,6 +8,7 @@
 %define libnamestatic	%{libname}-static-devel
 
 %define libdbcxx	%{libname_orig}cxx%{__soversion}
+%define libdbsql	%{libname_orig}sql%{__soversion}
 %define libdbtcl	%{libname_orig}tcl%{__soversion}
 %define libdbjava	db%{__soversion}
 
@@ -19,30 +20,35 @@
 %define gcj_support 1
 %endif
 
-%bcond_without tcl
-%bcond_without db1
+%bcond_without	sql
+%bcond_without	tcl
+%bcond_without	db1
 # Define to build a stripped down version to use for nss libraries
-%bcond_without nss
+%bcond_without	nss
 
 # Define to rename utilities and allow parallel installation
-%bcond_with parallel
+%bcond_without	parallel
 
 # mutexes defaults to POSIX/pthreads/library
-%bcond_with asmmutex
+%bcond_with	asmmutex
 
 Summary:	The Berkeley DB database library for C
 Name:		db51
 Version:	5.1.19
-Release:	%mkrel 1
+Release:	%mkrel 2
 Source0:	http://download.oracle.com/berkeley-db/db-%{version}.tar.gz
 # statically link db1 library
 Patch0:		db-5.1.19-db185.patch
+Patch1:		db-5.1.19-sql_flags.patch
 Patch2:		db-5.1.19-tcl-link.patch
 # fedora patches
 Patch101:	db-4.7.25-jni-include-dir.patch
 URL:		http://www.oracle.com/technology/software/products/berkeley-db/
 License:	BSD
 Group:		System/Libraries
+%if %{with sql}
+BuildRequires:	sqlite3-devel
+%endif
 %if %{with tcl}
 BuildRequires:	tcl-devel
 %endif
@@ -87,6 +93,21 @@ should be installed on all systems.
 
 This package contains the files needed to build C++ programs which use
 Berkeley DB.
+
+%if %{with sql}
+%package -n	%{libdbsql}
+Summary:	The Berkeley DB database library for SQL
+Group:		System/Libraries
+
+%description -n	%{libdbcxx}
+The Berkeley Database (Berkeley DB) is a programmatic toolkit that provides
+embedded database support for both traditional and client/server applications.
+Berkeley DB is used by many applications, including Python and Perl, so this
+should be installed on all systems.
+
+This package contains the files needed to build SQL programs which use
+Berkeley DB.
+%endif
 
 %if %{with java}
 %package -n	%{libdbjava}
@@ -149,6 +170,9 @@ This package contains command line tools for managing Berkeley DB databases.
 Summary:	Development libraries/header files for the Berkeley DB library
 Group:		Development/Databases
 Requires:	%{libname} = %{EVRD}
+%if %{with sql}
+Requires:	%{libdbsql} = %{EVRD}
+%endif
 %if %{with tcl}
 Requires:	%{libdbtcl} = %{EVRD}
 %endif
@@ -164,7 +188,7 @@ The Berkeley Database (Berkeley DB) is a programmatic toolkit that provides
 embedded database support for both traditional and client/server applications.
 Berkeley DB includes B+tree, Extended Linear Hashing, Fixed and Variable-length
 record access methods, transactions, locking, logging, shared memory caching
-and database recovery. DB supports C, C++, Java and Perl APIs.
+and database recovery. DB supports C, C++, Java, Perl and SQL APIs.
 
 This package contains the header files, libraries, and documentation for
 building programs which use Berkeley DB.
@@ -233,6 +257,7 @@ find . -type f -perm 0444 -exec chmod 644 {} \;
 
 rm -r lang/sql/jdbc/doc
 %patch0 -p1 -b .db185~
+%patch1 -p1 -b .sql_flags~
 %patch2 -p1 -b .tcl~
 
 # fedora patches
@@ -300,45 +325,49 @@ JAVA_MAKE="JAR=%{jar} JAVAC=%{javac} JAVACFLAGS="-nowarn" JAVA=%{java}"
 %endif
 
 pushd build_unix
-CONFIGURE_TOP="../dist" %configure2_5x \
-	--enable-shared --enable-static \
+CONFIGURE_TOP="../dist" \
+%configure2_5x	--includedir=%{_includedir}/%{name} \
+		--enable-shared --enable-static \
+%if %{with sql}
+		--enable-sql \
+%endif
 %if %{with db1}
-	--enable-compat185 --enable-dump185 \
+		--enable-compat185 --enable-dump185 \
 %endif
 %if %{with tcl}
-	--enable-tcl --with-tcl=%{_libdir} --enable-test \
+		--enable-tcl --with-tcl=%{_libdir} --enable-test \
 %endif
-	--enable-cxx \
+		--enable-cxx \
 %if %{with java}
-	--enable-java \
+		--enable-java \
 %endif
 %if %{with asmmutex}
 %ifarch %{ix86}
-	--disable-posixmutexes --with-mutex=x86/gcc-assembly
+		--disable-posixmutexes --with-mutex=x86/gcc-assembly
 %endif
 %ifarch x86_64
-	--disable-posixmutexes --with-mutex=x86_64/gcc-assembly
+		--disable-posixmutexes --with-mutex=x86_64/gcc-assembly
 %endif
 %ifarch alpha
-	--disable-posixmutexes --with-mutex=ALPHA/gcc-assembly
+		--disable-posixmutexes --with-mutex=ALPHA/gcc-assembly
 %endif
 %ifarch ia64
-	--disable-posixmutexes --with-mutex=ia64/gcc-assembly
+		--disable-posixmutexes --with-mutex=ia64/gcc-assembly
 %endif
 %ifarch ppc
-	--disable-posixmutexes --with-mutex=PPC/gcc-assembly
+		--disable-posixmutexes --with-mutex=PPC/gcc-assembly
 %endif
 %ifarch %{sparc}
-	--disable-posixmutexes --with-mutex=Sparc/gcc-assembly
+		--disable-posixmutexes --with-mutex=Sparc/gcc-assembly
 %endif
 %ifarch %{mips}
-	--disable-posixmutexes --with-mutex=MIPS/gcc-assembly
+		--disable-posixmutexes --with-mutex=MIPS/gcc-assembly
 %endif
 %ifarch %{arm}
-	--disable-posixmutexes --with-mutex=ARM/gcc-assembly
+		--disable-posixmutexes --with-mutex=ARM/gcc-assembly
 %endif
 %else
-	--with-mutex=POSIX/pthreads/library
+		--with-mutex=POSIX/pthreads/library
 %endif
 
 %make $JAVA_MAKE
@@ -351,36 +380,37 @@ popd
 %if %{with nss}
 mkdir build_nss
 pushd build_nss
-CONFIGURE_TOP="../dist" %configure2_5x \
-	--enable-shared --disable-static \
-	--disable-tcl --disable-cxx --disable-java \
-	--with-uniquename=_nss \
-	--enable-compat185 \
-	--disable-cryptography --disable-queue \
-	--disable-replication --disable-verify \
+CONFIGURE_TOP="../dist" \
+%configure2_5x	--includedir=%{_includedir}/db_nss \
+		--enable-shared --disable-static \
+		--disable-tcl --disable-cxx --disable-java \
+		--with-uniquename=_nss \
+		--enable-compat185 \
+		--disable-cryptography --disable-queue \
+		--disable-replication --disable-verify \
 %ifarch %{ix86}
-	--disable-posixmutexes --with-mutex=x86/gcc-assembly
+		--disable-posixmutexes --with-mutex=x86/gcc-assembly
 %endif
 %ifarch x86_64
-	--disable-posixmutexes --with-mutex=x86_64/gcc-assembly
+		--disable-posixmutexes --with-mutex=x86_64/gcc-assembly
 %endif
 %ifarch alpha
-	--disable-posixmutexes --with-mutex=ALPHA/gcc-assembly
+		--disable-posixmutexes --with-mutex=ALPHA/gcc-assembly
 %endif
 %ifarch ia64
-	--disable-posixmutexes --with-mutex=ia64/gcc-assembly
+		--disable-posixmutexes --with-mutex=ia64/gcc-assembly
 %endif
 %ifarch ppc
-	--disable-posixmutexes --with-mutex=PPC/gcc-assembly
+		--disable-posixmutexes --with-mutex=PPC/gcc-assembly
 %endif
 %ifarch %{sparc}
-	--disable-posixmutexes --with-mutex=Sparc/gcc-assembly
+		--disable-posixmutexes --with-mutex=Sparc/gcc-assembly
 %endif
 %ifarch %{mips}
-	--disable-posixmutexes --with-mutex=MIPS/gcc-assembly
+		--disable-posixmutexes --with-mutex=MIPS/gcc-assembly
 %endif
 %ifarch %{arm}
-	--disable-posixmutexes --with-mutex=ARM/gcc-assembly
+		--disable-posixmutexes --with-mutex=ARM/gcc-assembly
 %endif
 
 %make libdb_base=libdb_nss libso_target=libdb_nss-%{__soversion}.la libdir=/%{_lib}
@@ -391,20 +421,18 @@ popd
 rm -rf %{buildroot}
 
 make -C build_unix install_setup install_include install_lib install_utilities \
-	DESTDIR=%{buildroot} includedir=%{_includedir}/db4 \
-	emode=755
+	DESTDIR=%{buildroot} emode=755
 
 %if %{with nss}
 make -C build_nss install_include install_lib libdb_base=libdb_nss \
-	DESTDIR=%{buildroot} includedir=%{_includedir}/db_nss \
-	LIB_INSTALL_FILE_LIST=""
+	DESTDIR=%{buildroot} LIB_INSTALL_FILE_LIST=""
 
 mkdir -p %{buildroot}/%{_lib}
 mv %{buildroot}/%{_libdir}/libdb_nss-%{__soversion}.so %{buildroot}/%{_lib}
 ln -s  /%{_lib}/libdb_nss-%{__soversion}.so %{buildroot}%{_libdir}
 %endif
 
-ln -sf db4/db.h %{buildroot}%{_includedir}/db.h
+ln -sf %{name}/db.h %{buildroot}%{_includedir}/db.h
 
 # XXX This is needed for parallel install with db4.2
 %if %{with parallel}
@@ -429,18 +457,6 @@ aot-compile-rpm
 %endif
 %endif
 
-#symlink the short libdb???.a name
-ln -sf %{_libdb_a} %{buildroot}%{_libdir}/libdb.a
-ln -sf %{_libcxx_a} %{buildroot}%{_libdir}/libdb_cxx.a
-ln -sf libdb_tcl-%{__soversion}.a %{buildroot}%{_libdir}/libdb_tcl.a
-ln -sf %{_libdb_a} %{buildroot}%{_libdir}/libdb-5.a
-ln -sf %{_libcxx_a} %{buildroot}%{_libdir}/libdb_cxx-5.a
-ln -sf libdb_tcl-%{__soversion}.a %{buildroot}%{_libdir}/libdb_tcl-5.a
-%if %{with java}
-ln -sf libdb_java-%{__soversion}.a %{buildroot}%{_libdir}/libdb_java.a
-ln -sf libdb_java-%{__soversion}.a %{buildroot}%{_libdir}/libdb_java-5.a
-%endif
-
 rm -rf %{buildroot}%{_includedir}/db_nss/db_cxx.h
 
 %clean
@@ -462,6 +478,12 @@ rm -rf %{buildroot}
 %files -n %{libdbcxx}
 %defattr(755,root,root) 
 %{_libdir}/libdb_cxx-%{__soversion}.so
+
+%if %{with sql}
+%files -n %{libdbsql}
+%defattr(755,root,root)
+%{_libdir}/libdb_sql-%{__soversion}.so
+%endif
 
 %if %{with java}
 %files -n %{libdbjava}
@@ -500,20 +522,25 @@ rm -rf %{buildroot}
 %{_bindir}/db*_printlog
 %{_bindir}/db*_recover
 %{_bindir}/db*_replicate
-#%%{_bindir}/db*_sql
 %{_bindir}/db*_stat
 %{_bindir}/db*_upgrade
 %{_bindir}/db*_verify
+%if %{with sql}
+%{_bindir}/dbsql
+%endif
 
 %files -n %{libnamedev}
 %defattr(644,root,root,755)
 %doc docs/api_reference
-%dir %{_includedir}/db4
-%{_includedir}/db4/db.h
+%dir %{_includedir}/%{name}
+%{_includedir}/%{name}/db.h
 %if %{with db1}
-%{_includedir}/db4/db_185.h
+%{_includedir}/%{name}/db_185.h
 %endif
-%{_includedir}/db4/db_cxx.h
+%{_includedir}/%{name}/db_cxx.h
+%if %{with sql}
+%{_includedir}/%{name}/dbsql.h
+%endif
 %{_includedir}/db.h
 %{_libdir}/libdb.so
 %{_libdir}/libdb-5.so
@@ -521,6 +548,11 @@ rm -rf %{buildroot}
 %{_libdir}/libdb_cxx.so
 %{_libdir}/libdb_cxx-5.so
 %{_libdir}/libdb_cxx-%{__soversion}.la
+%if %{with sql}
+%{_libdir}/libdb_sql.so
+%{_libdir}/libdb_sql-5.so
+%{_libdir}/libdb_sql-%{__soversion}.la
+%endif
 %if %{with tcl}
 %{_libdir}/libdb_tcl.so
 %{_libdir}/libdb_tcl-5.so
