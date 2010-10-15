@@ -99,7 +99,7 @@ Berkeley DB.
 Summary:	The Berkeley DB database library for SQL
 Group:		System/Libraries
 
-%description -n	%{libdbcxx}
+%description -n	%{libdbsql}
 The Berkeley Database (Berkeley DB) is a programmatic toolkit that provides
 embedded database support for both traditional and client/server applications.
 Berkeley DB is used by many applications, including Python and Perl, so this
