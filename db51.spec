@@ -35,7 +35,7 @@
 Summary:	The Berkeley DB database library for C
 Name:		db51
 Version:	5.1.19
-Release:	%mkrel 2
+Release:	%mkrel 3
 Source0:	http://download.oracle.com/berkeley-db/db-%{version}.tar.gz
 # statically link db1 library
 Patch0:		db-5.1.19-db185.patch
@@ -156,8 +156,9 @@ Conflicts:	db-utils < %{__soversion}
 %endif
 Provides:	db5-utils = %{EVRD}
 Provides:	db-utils = %{EVRD}
+Requires:	%{name}-recover = %{EVRD}
 
-%description utils
+%description	utils
 The Berkeley Database (Berkeley DB) is a programmatic toolkit that provides
 embedded database support for both traditional and client/server applications.
 Berkeley DB includes B+tree, Extended Linear Hashing, Fixed and Variable-length
@@ -165,6 +166,15 @@ record access methods, transactions, locking, logging, shared memory caching
 and database recovery. DB supports C, C++, Java and Perl APIs.
 
 This package contains command line tools for managing Berkeley DB databases.
+
+%package	recover
+Summary:	Minimal package with '%{name}_recover' only
+Group:		Databases
+Provides:	db-recover = %{EVRD}
+
+%description	recover
+This is a minimal package that ships with '%{name}_recover' only as it's
+required for using "RPM ACID".
 
 %package -n	%{libnamedev}
 Summary:	Development libraries/header files for the Berkeley DB library
@@ -520,7 +530,6 @@ rm -rf %{buildroot}
 %{_bindir}/db*_hotbackup
 %{_bindir}/db*_load
 %{_bindir}/db*_printlog
-%{_bindir}/db*_recover
 %{_bindir}/db*_replicate
 %{_bindir}/db*_stat
 %{_bindir}/db*_upgrade
@@ -528,6 +537,9 @@ rm -rf %{buildroot}
 %if %{with sql}
 %{_bindir}/dbsql
 %endif
+
+%files recover
+%{_bindir}/db*_recover
 
 %files -n %{libnamedev}
 %defattr(644,root,root,755)
