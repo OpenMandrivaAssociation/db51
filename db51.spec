@@ -156,7 +156,7 @@ Conflicts:	db-utils < %{__soversion}
 %endif
 Provides:	db5-utils = %{EVRD}
 Provides:	db-utils = %{EVRD}
-Requires:	%{name}-recover = %{EVRD}
+Requires:	%{name}_recover = %{EVRD}
 
 %description	utils
 The Berkeley Database (Berkeley DB) is a programmatic toolkit that provides
@@ -167,12 +167,12 @@ and database recovery. DB supports C, C++, Java and Perl APIs.
 
 This package contains command line tools for managing Berkeley DB databases.
 
-%package	recover
+%package -n	%{name}_recover
 Summary:	Minimal package with '%{name}_recover' only
 Group:		Databases
-Provides:	db-recover = %{EVRD}
+Provides:	db_recover = %{EVRD}
 
-%description	recover
+%description -n	%{name}_recover
 This is a minimal package that ships with '%{name}_recover' only as it's
 required for using "RPM ACID".
 
@@ -538,7 +538,7 @@ rm -rf %{buildroot}
 %{_bindir}/dbsql
 %endif
 
-%files recover
+%files -n %{name}_recover
 %{_bindir}/db*_recover
 
 %files -n %{libnamedev}
