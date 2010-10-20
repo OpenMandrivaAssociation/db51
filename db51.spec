@@ -377,7 +377,7 @@ CONFIGURE_TOP="../dist" \
 		--disable-posixmutexes --with-mutex=ARM/gcc-assembly
 %endif
 %else
-		--with-mutex=POSIX/pthreads/library
+		--enable-posixmutexes --with-mutex=POSIX/pthreads/library
 %endif
 
 %make $JAVA_MAKE
@@ -398,6 +398,7 @@ CONFIGURE_TOP="../dist" \
 		--enable-compat185 \
 		--disable-cryptography --disable-queue \
 		--disable-replication --disable-verify \
+%if %{with asmmutex}
 %ifarch %{ix86}
 		--disable-posixmutexes --with-mutex=x86/gcc-assembly
 %endif
@@ -422,6 +423,11 @@ CONFIGURE_TOP="../dist" \
 %ifarch %{arm}
 		--disable-posixmutexes --with-mutex=ARM/gcc-assembly
 %endif
+%else
+		--enable-posixmutexes --with-mutex=POSIX/pthreads/library
+%endif
+
+
 
 %make libdb_base=libdb_nss libso_target=libdb_nss-%{__soversion}.la libdir=/%{_lib}
 popd
