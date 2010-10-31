@@ -192,6 +192,7 @@ Provides:	libdb%{__soversion}-devel = %{EVRD}
 Conflicts:	db-devel < %{__soversion}
 Provides:	db-devel = %{EVRD}
 Provides:	db5-devel = %{EVRD}
+Provides:	%{name}-devel = %{EVRD}
 
 %description -n	%{libnamedev}
 The Berkeley Database (Berkeley DB) is a programmatic toolkit that provides
