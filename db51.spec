@@ -339,6 +339,7 @@ pushd build_unix
 CONFIGURE_TOP="../dist" \
 %configure2_5x	--includedir=%{_includedir}/%{name} \
 		--enable-shared --enable-static \
+		--enable-dbm \
 %if %{with sql}
 		--enable-sql \
 %endif
@@ -394,6 +395,7 @@ pushd build_nss
 CONFIGURE_TOP="../dist" \
 %configure2_5x	--includedir=%{_includedir}/db_nss \
 		--enable-shared --disable-static \
+		--enable-dbm \
 		--disable-tcl --disable-cxx --disable-java \
 		--with-uniquename=_nss \
 		--enable-compat185 \
