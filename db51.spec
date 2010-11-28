@@ -35,7 +35,7 @@
 Summary:	The Berkeley DB database library for C
 Name:		db51
 Version:	5.1.19
-Release:	%mkrel 4
+Release:	%mkrel 5
 Source0:	http://download.oracle.com/berkeley-db/db-%{version}.tar.gz
 # statically link db1 library
 Patch0:		db-5.1.19-db185.patch
@@ -340,6 +340,7 @@ CONFIGURE_TOP="../dist" \
 %configure2_5x	--includedir=%{_includedir}/%{name} \
 		--enable-shared --enable-static \
 		--enable-dbm \
+		--enable-o_direct \
 %if %{with sql}
 		--enable-sql \
 %endif
@@ -396,6 +397,7 @@ CONFIGURE_TOP="../dist" \
 %configure2_5x	--includedir=%{_includedir}/db_nss \
 		--enable-shared --disable-static \
 		--enable-dbm \
+		--enable-o_direct \
 		--disable-tcl --disable-cxx --disable-java \
 		--with-uniquename=_nss \
 		--enable-compat185 \
