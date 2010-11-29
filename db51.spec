@@ -534,6 +534,16 @@ rm -rf %{buildroot}
 
 %files utils
 %defattr(-,root,root)
+%doc docs/api_reference/C/db_archive.html
+%doc docs/api_reference/C/db_checkpoint.html
+%doc docs/api_reference/C/db_deadlock.html
+%doc docs/api_reference/C/db_dump.html
+%doc docs/api_reference/C/db_load.html
+%doc docs/api_reference/C/db_printlog.html
+%doc docs/api_reference/C/db_replicate.html
+%doc docs/api_reference/C/db_stat.html
+%doc docs/api_reference/C/db_upgrade.html
+%doc docs/api_reference/C/db_verify.html
 %{_bindir}/db*_archive
 %{_bindir}/db*_checkpoint
 %{_bindir}/db*_deadlock
@@ -546,10 +556,12 @@ rm -rf %{buildroot}
 %{_bindir}/db*_upgrade
 %{_bindir}/db*_verify
 %if %{with sql}
+%doc docs/api_reference/C/dbsql.html
 %{_bindir}/dbsql
 %endif
 
 %files -n %{name}_recover
+%doc docs/api_reference/C/db_recover.html
 %{_bindir}/db*_recover
 
 %files -n %{libnamedev}
