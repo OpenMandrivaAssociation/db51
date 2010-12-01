@@ -340,6 +340,7 @@ CONFIGURE_TOP="../dist" \
 %configure2_5x	--includedir=%{_includedir}/%{name} \
 		--enable-shared --enable-static \
 		--enable-dbm \
+		--enable-systemtap \
 		--enable-o_direct \
 %if %{with sql}
 		--enable-sql \
@@ -397,6 +398,7 @@ CONFIGURE_TOP="../dist" \
 %configure2_5x	--includedir=%{_includedir}/db_nss \
 		--enable-shared --disable-static \
 		--enable-dbm \
+		--enable-systemtap \
 		--enable-o_direct \
 		--disable-tcl --disable-cxx --disable-java \
 		--with-uniquename=_nss \
