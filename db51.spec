@@ -34,12 +34,12 @@
 
 Summary:	The Berkeley DB database library for C
 Name:		db51
-Version:	5.1.19
-Release:	%mkrel 5
+Version:	5.1.25
+Release:	1
 Source0:	http://download.oracle.com/berkeley-db/db-%{version}.tar.gz
 # statically link db1 library
 Patch0:		db-5.1.19-db185.patch
-Patch1:		db-5.1.19-sql_flags.patch
+Patch1:		db-5.1.25-sql_flags.patch
 Patch2:		db-5.1.19-tcl-link.patch
 # fedora patches
 Patch101:	db-4.7.25-jni-include-dir.patch
