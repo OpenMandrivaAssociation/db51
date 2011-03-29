@@ -17,7 +17,7 @@
 
 %ifnarch %[mips} %{arm}
 %bcond_without java
-%define gcj_support 1
+%define gcj_support 0
 %endif
 
 %bcond_without	sql
