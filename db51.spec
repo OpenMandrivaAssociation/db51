@@ -10,7 +10,7 @@
 %define libdbcxx	%{libname_orig}cxx%{__soversion}
 %define libdbsql	%{libname_orig}sql%{__soversion}
 %define libdbtcl	%{libname_orig}tcl%{__soversion}
-%define libdbjava	db%{__soversion}
+%define libdbjava	%{libname_orig}java%{__soversion}
 
 %define libdbnss	%{libname_orig}nss%{__soversion}
 %define libdbnssdev	%{libdbnss}-devel
@@ -114,6 +114,7 @@ Berkeley DB.
 %package -n	%{libdbjava}
 Summary:	The Berkeley DB database library for C++
 Group:		System/Libraries
+%rename		db%{__soversion}
 
 %description -n	%{libdbjava}
 The Berkeley Database (Berkeley DB) is a programmatic toolkit that provides
