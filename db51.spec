@@ -60,6 +60,8 @@ BuildRequires:	ed libtool
 %if %{with java}
 BuildRequires:	java-rpmbuild
 BuildRequires:	sharutils
+# required for jni.h
+BuildRequires:	libgcj-devel
 %if %{gcj_support}
 BuildRequires:	java-gcj-compat-devel
 %endif
