@@ -35,7 +35,7 @@
 Summary:	The Berkeley DB database library for C
 Name:		db51
 Version:	5.1.25
-Release:	1
+Release:	2
 Source0:	http://download.oracle.com/berkeley-db/db-%{version}.tar.gz
 # statically link db1 library
 Patch0:		db-5.1.19-db185.patch
@@ -329,6 +329,9 @@ cd dist
 CFLAGS="$RPM_OPT_FLAGS -fno-tree-ccp -fno-tree-dominator-opts -fno-tree-pre -fno-tree-pta"
 %ifarch ppc
 CFLAGS="$CFLAGS -D_GNU_SOURCE -D_REENTRANT"
+%endif
+%ifarch %{ix86}
+CFLAGS="$CFLAGS -O0"
 %endif
 export CFLAGS
 
