@@ -35,7 +35,7 @@
 Summary:	The Berkeley DB database library for C
 Name:		db51
 Version:	5.1.25
-Release:	4
+Release:	5
 Source0:	http://download.oracle.com/berkeley-db/db-%{version}.tar.gz
 # statically link db1 library
 Patch0:		db-5.1.19-db185.patch
@@ -197,6 +197,13 @@ Requires:	%{libdbcxx} = %{EVRD}
 Provides:	db%{__soversion}-devel = %{EVRD}
 Provides:	libdb%{__soversion}-devel = %{EVRD}
 Conflicts:	db-devel < %{__soversion}
+Conflicts:	db4.8-devel
+Conflicts:	db4.7-devel
+Conflicts:	db4.6-devel
+Conflicts:	db4.5-devel
+Conflicts:	db4.4-devel
+Conflicts:	db4.3-devel
+Conflicts:	db4.2-devel
 Provides:	db-devel = %{EVRD}
 Provides:	db5-devel = %{EVRD}
 Provides:	%{name}-devel = %{EVRD}
