@@ -334,9 +334,6 @@ cd dist
 ./s_config
 
 %build
-# -fno-tree-ccp -fno-tree-dominator-opts to avoid breakage in src/bt_dup.c
-# -fno-tree-pre -fno-tree-pta to avoid breakage in src/hash_page.c
-CFLAGS="$RPM_OPT_FLAGS -fno-tree-ccp -fno-tree-dominator-opts -fno-tree-pre -fno-tree-pta"
 %ifarch ppc
 CFLAGS="$CFLAGS -D_GNU_SOURCE -D_REENTRANT"
 %endif
