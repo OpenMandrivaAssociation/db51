@@ -1,0 +1,20 @@
+--- db-5.1.25/dist/Makefile.in.sql_flags~	2011-03-26 15:36:43.562494012 +0100
++++ db-5.1.25/dist/Makefile.in	2011-03-26 15:39:17.703494011 +0100
+@@ -107,6 +107,7 @@ libxso_major=	$(libcxx_base)-$(LIBMAJOR)
+ ##################################################
+ SQLFLAGS=	-I$(builddir) -I$(builddir)/sql -I$(langdir)/sql/generated \
+ 		-D_HAVE_SQLITE_CONFIG_H @SQL_FLAGS@
++LIBSQLSO_LIBS=	-ldl -lpthread
+ 
+ libsql_base=	libdb_sql
+ libsql=		$(libsql_base).a
+@@ -856,7 +857,8 @@ $(libsql_version): $(SQL_OBJS)
+ 
+ # Shared SQL library.
+ $(libsqlso_target): $(SQL_OBJS)
+-	$(SOLINK) $(SOFLAGS) $(LDFLAGS) -o $@ $(SQL_OBJS) $(LIBCSO_LIBS)
++	$(SOLINK) $(SOFLAGS) $(LDFLAGS) \
++	    -o $@ $(SQL_OBJS) $(LIBCSO_LIBS) $(LIBSQLSO_LIBS)
+ 	$(RM) $(libsql)
+ 	$(LN) -s .libs/$(libsql_version) $(libsql)
+ 
