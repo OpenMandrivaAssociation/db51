@@ -1,19 +1,19 @@
-%define	__soversion	5.1
-%define	_libdb_a	libdb-%{__soversion}.a
-%define	_libcxx_a	libdb_cxx-%{__soversion}.a
+%define __soversion 5.1
+%define _libdb_a libdb-%{__soversion}.a
+%define _libcxx_a libdb_cxx-%{__soversion}.a
 
-%define libname_orig	%mklibname db
-%define libname		%{libname_orig}%{__soversion}
-%define libnamedev	%{libname}-devel
-%define libnamestatic	%{libname}-static-devel
+%define libname_orig %mklibname db
+%define libname %{libname_orig}%{__soversion}
+%define libnamedev %{libname}-devel
+%define libnamestatic %{libname}-static-devel
 
-%define libdbcxx	%{libname_orig}cxx%{__soversion}
-%define libdbsql	%{libname_orig}sql%{__soversion}
-%define libdbtcl	%{libname_orig}tcl%{__soversion}
-%define libdbjava	%{libname_orig}java%{__soversion}
+%define libdbcxx %{libname_orig}cxx%{__soversion}
+%define libdbsql %{libname_orig}sql%{__soversion}
+%define libdbtcl %{libname_orig}tcl%{__soversion}
+%define libdbjava %{libname_orig}java%{__soversion}
 
-%define libdbnss	%{libname_orig}nss%{__soversion}
-%define libdbnssdev	%{libdbnss}-devel
+%define libdbnss %{libname_orig}nss%{__soversion}
+%define libdbnssdev %{libdbnss}-devel
 
 %ifnarch %[mips} %{arm}
 %bcond_without java
@@ -34,8 +34,8 @@
 
 Summary:	The Berkeley DB database library for C
 Name:		db51
-Version:	5.1.25
-Release:	5
+Version:	5.1.29
+Release:	1
 Source0:	http://download.oracle.com/berkeley-db/db-%{version}.tar.gz
 # statically link db1 library
 Patch0:		db-5.1.19-db185.patch
@@ -56,7 +56,8 @@ BuildRequires:	tcl-devel
 %if %{with db1}
 BuildRequires:	db1-devel
 %endif
-BuildRequires:	ed libtool
+BuildRequires:	ed
+BuildRequires:	libtool
 %if %{with java}
 BuildRequires:	java-rpmbuild
 BuildRequires:	sharutils
@@ -74,7 +75,7 @@ embedded database support for both traditional and client/server applications.
 Berkeley DB is used by many applications, including Python and Perl, so this
 should be installed on all systems.
 
-%package -n	%{libname}
+%package -n %{libname}
 Summary:	The Berkeley DB database library for C
 Group:		System/Libraries
 
@@ -84,7 +85,7 @@ embedded database support for both traditional and client/server applications.
 Berkeley DB is used by many applications, including Python and Perl, so this
 should be installed on all systems.
 
-%package -n	%{libdbcxx}
+%package -n %{libdbcxx}
 Summary:	The Berkeley DB database library for C++
 Group:		System/Libraries
 
@@ -98,7 +99,7 @@ This package contains the files needed to build C++ programs which use
 Berkeley DB.
 
 %if %{with sql}
-%package -n	%{libdbsql}
+%package -n %{libdbsql}
 Summary:	The Berkeley DB database library for SQL
 Group:		System/Libraries
 
@@ -113,7 +114,7 @@ Berkeley DB.
 %endif
 
 %if %{with java}
-%package -n	%{libdbjava}
+%package -n %{libdbjava}
 Summary:	The Berkeley DB database library for C++
 Group:		System/Libraries
 %rename		db%{__soversion}
@@ -127,7 +128,7 @@ should be installed on all systems.
 This package contains the files needed to build Java programs which use
 Berkeley DB.
 
-%package -n	%{libdbjava}-javadoc
+%package -n %{libdbjava}-javadoc
 Summary:	Javadoc for %{name}
 Group:		Development/Java
 
@@ -136,7 +137,7 @@ Javadoc for %{name}.
 %endif
 
 %if %{with tcl}
-%package -n	%{libdbtcl}
+%package -n %{libdbtcl}
 Summary:	The Berkeley DB database library for TCL
 Group:		System/Libraries
 
@@ -150,7 +151,7 @@ This package contains the header files, libraries, and documentation for
 building tcl programs which use Berkeley DB.
 %endif
 
-%package	utils
+%package utils
 Summary:	Command line tools for managing Berkeley DB databases
 Group:		Databases
 %if !%{with parallel}
@@ -162,7 +163,7 @@ Provides:	db5-utils = %{EVRD}
 Provides:	db-utils = %{EVRD}
 Requires:	%{name}_recover = %{EVRD}
 
-%description	utils
+%description utils
 The Berkeley Database (Berkeley DB) is a programmatic toolkit that provides
 embedded database support for both traditional and client/server applications.
 Berkeley DB includes B+tree, Extended Linear Hashing, Fixed and Variable-length
@@ -171,7 +172,7 @@ and database recovery. DB supports C, C++, Java and Perl APIs.
 
 This package contains command line tools for managing Berkeley DB databases.
 
-%package -n	%{name}_recover
+%package -n %{name}_recover
 Summary:	Minimal package with '%{name}_recover' only
 Group:		Databases
 Provides:	db_recover = %{EVRD}
@@ -180,7 +181,7 @@ Provides:	db_recover = %{EVRD}
 This is a minimal package that ships with '%{name}_recover' only as it's
 required for using "RPM ACID".
 
-%package -n	%{libnamedev}
+%package -n %{libnamedev}
 Summary:	Development libraries/header files for the Berkeley DB library
 Group:		Development/Databases
 Requires:	%{libname} = %{EVRD}
@@ -218,7 +219,7 @@ and database recovery. DB supports C, C++, Java, Perl and SQL APIs.
 This package contains the header files, libraries, and documentation for
 building programs which use Berkeley DB.
 
-%package -n	%{libnamestatic}
+%package -n %{libnamestatic}
 Summary:	Development static libraries files for the Berkeley DB library
 Group:		Development/Databases
 Requires:	db%{__soversion}-devel = %{EVRD}
@@ -253,7 +254,7 @@ and database recovery. DB supports C, C++, Java and Perl APIs.
 This package contains the shared library required by some nss modules
 that use Berkeley DB.
 
-%package -n	%{libdbnssdev}
+%package -n %{libdbnssdev}
 Summary:	Development libraries/header files for building nss modules with Berkeley DB
 Group:		Development/Databases
 Requires:	%{libdbnss} = %{EVRD}
