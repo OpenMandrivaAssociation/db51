@@ -43,7 +43,7 @@ Patch1:		db-5.1.25-sql_flags.patch
 Patch2:		db-5.1.19-tcl-link.patch
 # fedora patches
 Patch101:	db-4.7.25-jni-include-dir.patch
-URL:		http://www.oracle.com/technology/software/products/berkeley-db/
+URL:		https://www.oracle.com/technology/software/products/berkeley-db/
 License:	BSD
 Group:		System/Libraries
 BuildRequires:	systemtap
