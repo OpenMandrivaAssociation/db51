@@ -46,6 +46,11 @@ Patch101:	db-4.7.25-jni-include-dir.patch
 URL:		https://www.oracle.com/technology/software/products/berkeley-db/
 License:	BSD
 Group:		System/Libraries
+BuildRequires:	autoconf
+BuildRequires:	automake
+BuildRequires:	libtool-base
+BuildRequires:	slibtool
+BuildRequires:	make
 BuildRequires:	systemtap
 %if %{with sql}
 BuildRequires:	sqlite3-devel
